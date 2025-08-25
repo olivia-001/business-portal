@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Desk Portal - Business Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1aeb5;
+        }
+
+        .messaging-section {
+            margin-top: 40px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .messaging-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .messages-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .message {
+            background: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #e9ecef;
+        }
+
+        .message.from-portal {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: 20px;
+            border-left-color: rgba(255,255,255,0.3);
+        }
+
+        .message.from-dashboard {
+            background: #e3f2fd;
+            margin-right: 20px;
+            border-left-color: #2196F3;
+        }
+
+        .message-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .message-text {
+            line-height: 1.4;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 12px;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .message-input button {
+            padding: 12px 25px;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .connection-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">🔄 Connecting...</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Front Desk Portal</h1>
+            <p>Customer Service & Data Entry</p>
+        </div>
+
+        <div class="main-content">
+            <h2 style="margin-bottom: 25px; color: #333;">📝 New Transaction</h2>
+            
+            <form id="transactionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customerName">Customer Name *</label>
+                        <input type="text" id="customerName" name="customerName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number *</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" required 
+                               pattern="[0-9]{11}" title="Please enter 11 digits">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service">Service Type *</label>
+                        <select id="service" name="service" required>
+                            <option value="">Select Service</option>
+                            <option value="Photography">📸 Photography</option>
+                            <option value="Makeup">💄 Makeup</option>
+                            <option value="Product Sales">🛍️ Product Sales</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amountPaid">Amount Paid (₦) *</label>
+                        <input type="number" id="amountPaid" name="amountPaid" 
+                               min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serviceBy">Service Rendered By *</label>
+                        <input type="text" id="serviceBy" name="serviceBy" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenses">Related Expenses (₦)</label>
+                        <input type="number" id="expenses" name="expenses" 
+                               min="0" step="0.01" placeholder="0.00 (Optional)">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Service Date *</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    💾 Save Transaction
+                </button>
+            </form>
+
+            <div class="messaging-section">
+                <h3>💬 Communication Hub</h3>
+                <div class="messages-container" id="messagesContainer">
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        Loading messages...
+                    </div>
+                </div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Type your message to the owner...">
+                    <button type="button" class="btn" onclick="sendMessage()" id="sendBtn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = window.location.origin + '/api';
+        let connectionStatus = 'connecting';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setTodayDate();
+            setupMessagePolling();
+            checkConnection();
+        });
+
+        // Initialize application
+        async function initializeApp() {
+            await loadMessages();
+            updateConnectionStatus('connected');
+        }
+
+        function setTodayDate() {
+            document.getElementById('date').valueAsDate = new Date();
+        }
+
+        function updateConnectionStatus(status) {
+            connectionStatus = status;
+            const statusEl = document.getElementById('connectionStatus');
+            
+            if (status === 'connected') {
+                statusEl.textContent = '🟢 Connected';
+                statusEl.className = 'connection-status connected';
+            } else {
+                statusEl.textContent = '🔴 Disconnected';
+                statusEl.className = 'connection-status disconnected';
+            }
+        }
+
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    updateConnectionStatus('connected');
+                } else {
+                    updateConnectionStatus('disconnected');
+                }
+            } catch (error) {
+                updateConnectionStatus('disconnected');
+            }
+
+            // Check every 30 seconds
+            setTimeout(checkConnection, 30000);
+        }
+
+        // Form submission
+        document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Saving...';
+            
+            try {
+                const formData = new FormData(this);
+                const transactionData = {
+                    customerName: formData.get('customerName'),
+                    phoneNumber: formData.get('phoneNumber'),
+                    service: formData.get('service'),
+                    amountPaid: parseFloat(formData.get('amountPaid')),
+                    serviceBy: formData.get('serviceBy'),
+                    expenses: parseFloat(formData.get('expenses')),
+                    date: formData.get('date')
+                };
+
+                const response = await fetch(`${API_BASE_URL}/transactions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(transactionData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('✅ Transaction saved successfully!', 'success');
+                    this.reset();
+                    setTodayDate();
+                } else {
+                    throw new Error(result.error || 'Failed to save transaction');
+                }
+
+            } catch (error) {
+                console.error('Error saving transaction:', error);
+                showMessage('❌ Error saving transaction: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+            
+            const form = document.getElementById('transactionForm');
+            form.insertAdjacentElement('afterend', messageDiv);
+            
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
+
+        // Messaging functions
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/messages`);
+                if (!response.ok) throw new Error('Failed to load messages');
+                
+                const messages = await response.json();
+                displayMessages(messages);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                document.getElementById('messagesContainer').innerHTML = 
+                    '<div style="text-align: center; color: #f44336; padding: 20px;">Failed to load messages</div>';
+            }
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No messages yet</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(message => `
+                <div class="message ${message.sender === 'portal' ? 'from-portal' : 'from-dashboard'}">
+                    <div class="message-meta">
+                        ${message.sender === 'portal' ? 'Front Desk' : 'Owner'} - ${message.time}
+                    </div>
+                    <div class="message-text">${escapeHtml(message.text)}</div>
+                </div>
+            `).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const originalText = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: message,
+                        sender: 'portal'
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to send message');
+
+                input.value = '';
+                await loadMessages(); // Reload to show new message
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showMessage('❌ Failed to send message', 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = originalText;
+            }
+        }
+
+        // Poll for new messages every 5 seconds
+        function setupMessagePolling() {
+            setInterval(loadMessages, 5000);
+        }
+
+        // Allow Enter key to send messages
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN'
+            }).format(amount);
+        }
+    </script>
+</body>
+</html>
