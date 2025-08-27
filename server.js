@@ -71,6 +71,51 @@ db.serialize(() => {
 
 // API Routes
 
+// Home page route - shows available interfaces
+app.get('/', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Business Management System</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+                .card { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 8px; }
+                .btn { display: inline-block; background: #007bff; color: white; padding: 12px 24px; 
+                       text-decoration: none; border-radius: 4px; margin: 10px 0; }
+                .btn:hover { background: #0056b3; }
+                .portal-btn { background: #28a745; }
+                .portal-btn:hover { background: #1e7e34; }
+            </style>
+        </head>
+        <body>
+            <h1>🚀 Business Management System</h1>
+            <p>Choose your interface:</p>
+            
+            <div class="card">
+                <h3>🏢 Front Desk Portal</h3>
+                <p>For staff to record transactions and customer data</p>
+                <a href="/portal" class="btn portal-btn">Open Portal</a>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Admin Dashboard</h3>
+                <p>For managers to view analytics and manage data</p>
+                <a href="/dashboard" class="btn">Open Dashboard</a>
+            </div>
+            
+            <div class="card">
+                <h3>🔧 API Endpoints</h3>
+                <p>Available at: <code>/api</code></p>
+            </div>
+            
+            <hr style="margin: 30px 0;">
+            <p><small>Status: ✅ Server Active | Database: ✅ Connected</small></p>
+        </body>
+        </html>
+    `);
+});
+
 // Get all transactions
 app.get('/api/transactions', (req, res) => {
     const { filter } = req.query;
@@ -418,22 +463,6 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-app.get('/', (req, res) => {
-    res.json({
-        message: 'Business Management System API',
-        endpoints: {
-            portal: '/portal',
-            dashboard: '/dashboard',
-            api: {
-                transactions: '/api/transactions',
-                analytics: '/api/analytics',
-                messages: '/api/messages',
-                health: '/api/health'
-            }
-        }
-    });
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -470,6 +499,8 @@ setTimeout(backupDatabase, 5 * 60 * 1000);
 
 // Run backup daily (24 hours = 24 * 60 * 60 * 1000 ms)
 setInterval(backupDatabase, 24 * 60 * 60 * 1000);
+
+// Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
@@ -477,9 +508,21 @@ app.listen(PORT, () => {
     console.log(`🔧 API: http://localhost:${PORT}/api`);
 });
 
-//  shutdown
+// Graceful shutdown
 process.on('SIGINT', () => {
     console.log('\n🛑 Shutting down...');
+    db.close((err) => {
+        if (err) {
+            console.error('Error closing database:', err.message);
+        } else {
+            console.log('✅ Database connection closed');
+        }
+        process.exit(0);
+    });
+});
+
+process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully');
     db.close((err) => {
         if (err) {
             console.error('Error closing database:', err.message);
