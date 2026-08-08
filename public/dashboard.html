@@ -629,6 +629,7 @@
                     <thead>
                         <tr>
                             <th>Date</th>
+                            <th>Type</th>
                             <th>Customer</th>
                             <th>Phone</th>
                             <th>Service</th>
@@ -640,14 +641,14 @@
                     </thead>
                     <tbody id="transactionsList">
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">Loading transactions...</td>
+                            <td colspan="9" style="text-align: center; padding: 40px;">Loading transactions...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="messaging-section">
-                <h3>💬 Communication Hub</h3>
+                <h3>Communication Hub</h3>
                 <div class="messages-container" id="messagesContainer">
                     <div style="text-align: center; color: #666; padding: 20px;">
                         Loading messages...
@@ -762,8 +763,9 @@
         }
 
         // Update additional stats
-        function updateStats(data) {
-            const avgTransaction = data.transactionCount > 0 ? data.totalIncome / data.transactionCount : 0;
+       function updateStats(data) {
+            const salesCount = typeof data.salesCount === 'number' ? data.salesCount : data.transactionCount;
+            const avgTransaction = salesCount > 0 ? data.totalIncome / salesCount : 0;
             const profitMargin = data.totalIncome > 0 ? ((data.netIncome / data.totalIncome) * 100) : 0;
             
             document.getElementById('avgTransaction').textContent = formatCurrency(avgTransaction);
@@ -795,7 +797,7 @@
             } catch (error) {
                 console.error('Error loading transactions:', error);
                 document.getElementById('transactionsList').innerHTML = 
-                    '<tr><td colspan="8" style="text-align: center; color: #f44336; padding: 40px;">Failed to load transactions</td></tr>';
+                    '<tr><td colspan="9" style="text-align: center; color: #f44336; padding: 40px;">Failed to load transactions</td></tr>';
             }
         }
 
@@ -804,20 +806,29 @@
             const tbody = document.getElementById('transactionsList');
             
             if (transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No transactions found for this period</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">No transactions found for this period</td></tr>';
                 return;
             }
 
             tbody.innerHTML = transactions.map(transaction => {
                 const net = transaction.amountPaid - transaction.expenses;
                 const netColor = net >= 0 ? 'green' : 'red';
-                
+                const isExpense = transaction.type === 'expense';
+
+                const typeCell = isExpense ? 'Expense' : 'Sale';
+                const customerCell = isExpense ? '—' : escapeHtml(transaction.customerName);
+                const phoneCell = isExpense ? '—' : escapeHtml(transaction.phoneNumber);
+                const serviceCell = isExpense
+                    ? `${escapeHtml(transaction.expenseDescription || 'Internal Expense')}`
+                    : escapeHtml(transaction.service);
+
                 return `
                     <tr>
                         <td>${new Date(transaction.date).toLocaleDateString()}</td>
-                        <td>${escapeHtml(transaction.customerName)}</td>
-                        <td>${escapeHtml(transaction.phoneNumber)}</td>
-                        <td>${escapeHtml(transaction.service)}</td>
+                        <td>${typeCell}</td>
+                        <td>${customerCell}</td>
+                        <td>${phoneCell}</td>
+                        <td>${serviceCell}</td>
                         <td>${formatCurrency(transaction.amountPaid)}</td>
                         <td>${formatCurrency(transaction.expenses)}</td>
                         <td style="color: ${netColor}; font-weight: bold;">${formatCurrency(net)}</td>
@@ -1021,7 +1032,7 @@
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     
-                    showNotification('✅ CSV file downloaded successfully!', 'success');
+                    showNotification(' CSV file downloaded successfully!', 'success');
                 } else {
                     const data = await response.json();
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1034,12 +1045,12 @@
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     
-                    showNotification('✅ JSON file downloaded successfully!', 'success');
+                    showNotification(' JSON file downloaded successfully!', 'success');
                 }
 
             } catch (error) {
                 console.error('Export error:', error);
-                showNotification('❌ Export failed: ' + error.message, 'error');
+                showNotification(' Export failed: ' + error.message, 'error');
             }
         }
 
@@ -1068,7 +1079,7 @@
 
                 if (response.ok) {
                     closeClearModal();
-                    showNotification('✅ All data cleared successfully! Backup created.', 'success');
+                    showNotification(' All data cleared successfully! Backup created.', 'success');
                     
                     // Refresh the dashboard to show empty state
                     setTimeout(() => {

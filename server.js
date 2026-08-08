@@ -38,9 +38,9 @@ app.use((req, res, next) => {
 // Initialize SQLite Database
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
-        console.error('❌ Error opening database:', err.message);
+        console.error('Error opening database:', err.message);
     } else {
-        console.log('✅ Connected to SQLite database:', DB_PATH);
+        console.log('Connected to SQLite database:', DB_PATH);
     }
 });
 
@@ -68,6 +68,20 @@ db.serialize(() => {
         time TEXT NOT NULL
     )`);
 });
+// Migration: add columns needed for standalone (non-customer) expense records.
+// Safe to run on every startup — SQLite errors if the column already exists,
+// and we simply ignore that specific error.
+db.run(`ALTER TABLE transactions ADD COLUMN type TEXT NOT NULL DEFAULT 'sale'`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+        console.error('Migration error (type column):', err.message);
+    }
+});
+
+db.run(`ALTER TABLE transactions ADD COLUMN expenseDescription TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+        console.error('Migration error (expenseDescription column):', err.message);
+    }
+});
 
 // API Routes
 
@@ -89,17 +103,17 @@ app.get('/', (req, res) => {
             </style>
         </head>
         <body>
-            <h1>🚀 Business Management System</h1>
+            <h1> Business Management System</h1>
             <p>Choose your interface:</p>
             
             <div class="card">
-                <h3>🏢 Front Desk Portal</h3>
+                <h3> Front Desk Portal</h3>
                 <p>For staff to record transactions and customer data</p>
                 <a href="/portal" class="btn portal-btn">Open Portal</a>
             </div>
             
             <div class="card">
-                <h3>📊 Admin Dashboard</h3>
+                <h3> Admin Dashboard</h3>
                 <p>For managers to view analytics and manage data</p>
                 <a href="/dashboard" class="btn">Open Dashboard</a>
             </div>
@@ -110,7 +124,7 @@ app.get('/', (req, res) => {
             </div>
             
             <hr style="margin: 30px 0;">
-            <p><small>Status: ✅ Server Active | Database: ✅ Connected</small></p>
+            <p><small>Status:  Server Active | Database:  Connected</small></p>
         </body>
         </html>
     `);
@@ -178,10 +192,10 @@ app.post('/api/transactions', (req, res) => {
     const formattedDate = formatDate(date);
     
     const stmt = db.prepare(`INSERT INTO transactions 
-        (customerName, phoneNumber, service, amountPaid, serviceBy, expenses, date, timestamp) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+        (customerName, phoneNumber, service, amountPaid, serviceBy, expenses, date, timestamp, type) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
     
-    stmt.run([customerName, phoneNumber, service, amountPaid, serviceBy, finalExpenses, formattedDate, timestamp], function(err) {
+    stmt.run([customerName, phoneNumber, service, amountPaid, serviceBy, finalExpenses, formattedDate, timestamp, 'sale'], function(err) {
         if (err) {
             console.error('Database error:', err);
             res.status(500).json({ error: err.message });
@@ -200,7 +214,7 @@ app.post('/api/transactions', (req, res) => {
             timestamp
         };
         
-        console.log(`✅ New transaction added: ${customerName} - ${service} - ₦${amountPaid}`);
+        console.log(` New transaction added: ${customerName} - ${service} - ₦${amountPaid}`);
         
         res.json({ 
             id: this.lastID, 
@@ -211,7 +225,53 @@ app.post('/api/transactions', (req, res) => {
     
     stmt.finalize();
 });
+// Add a standalone expense — no customer information required
+app.post('/api/expenses', (req, res) => {
+    const { expenseDescription, amount, serviceBy, date } = req.body;
 
+    if (!expenseDescription || !amount || !serviceBy || !date) {
+        return res.status(400).json({ error: 'Required fields missing: expenseDescription, amount, serviceBy, date' });
+    }
+
+    const timestamp = new Date().toISOString();
+    const formattedDate = formatDate(date);
+
+    const stmt = db.prepare(`INSERT INTO transactions
+        (customerName, phoneNumber, service, amountPaid, serviceBy, expenses, date, timestamp, type, expenseDescription)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+
+    stmt.run(['', '', '', 0, serviceBy, amount, formattedDate, timestamp, 'expense', expenseDescription], function(err) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: err.message });
+            return;
+        }
+
+        const newExpense = {
+            id: this.lastID,
+            customerName: '',
+            phoneNumber: '',
+            service: '',
+            amountPaid: 0,
+            serviceBy,
+            expenses: parseFloat(amount),
+            date: formattedDate,
+            timestamp,
+            type: 'expense',
+            expenseDescription
+        };
+
+        console.log(` New standalone expense added: ${expenseDescription} - ₦${amount} (by ${serviceBy})`);
+
+        res.json({
+            id: this.lastID,
+            message: 'Expense recorded successfully',
+            transaction: newExpense
+        });
+    });
+
+    stmt.finalize();
+});
 // Get dashboard analytics
 app.get('/api/analytics', (req, res) => {
     const { filter } = req.query;
@@ -263,12 +323,20 @@ app.get('/api/analytics', (req, res) => {
                 Makeup: 0,
                 'Product Sales': 0
             },
-            transactionCount: rows.length
+            transactionCount: rows.length,
+            salesCount: rows.filter(t => t.type !== 'expense').length,
+            expenseCount: rows.filter(t => t.type === 'expense').length
         };
 
         analytics.netIncome = analytics.totalIncome - analytics.totalExpenses;
 
         rows.forEach(transaction => {
+            // Standalone expenses have no service and no revenue — keep them
+            // out of the service-performance breakdown entirely.
+            if (transaction.type === 'expense') {
+                return;
+            }
+
             if (analytics.servicePerformance.hasOwnProperty(transaction.service)) {
                 analytics.servicePerformance[transaction.service] += transaction.amountPaid;
             } else {
@@ -421,11 +489,12 @@ app.get('/api/admin/export', (req, res) => {
 
         if (format === 'csv') {
             // Generate CSV format
-            let csv = 'Date,Customer Name,Phone Number,Service,Amount Paid,Service By,Expenses,Net Profit,Timestamp\n';
+            let csv = 'Date,Type,Customer Name,Phone Number,Service,Expense Description,Amount Paid,Service By,Expenses,Net Profit,Timestamp\n';
             
             rows.forEach(row => {
                 const netProfit = row.amountPaid - row.expenses;
-                csv += `"${row.date}","${row.customerName}","${row.phoneNumber}","${row.service}","${row.amountPaid}","${row.serviceBy}","${row.expenses}","${netProfit}","${row.timestamp}"\n`;
+                const recordType = row.type === 'expense' ? 'Expense' : 'Sale';
+                csv += `"${row.date}","${recordType}","${row.customerName}","${row.phoneNumber}","${row.service}","${row.expenseDescription || ''}","${row.amountPaid}","${row.serviceBy}","${row.expenses}","${netProfit}","${row.timestamp}"\n`;
             });
 
             const filename = `business_export_${filter || 'all'}_${new Date().toISOString().split('T')[0]}.csv`;
@@ -485,12 +554,12 @@ function backupDatabase() {
         if (fs.existsSync(DB_PATH)) {
             // Copy database file
             fs.copyFileSync(DB_PATH, backupPath);
-            console.log(`✅ Database backed up to ${backupPath}`);
+            console.log(` Database backed up to ${backupPath}`);
         } else {
-            console.log('⚠️ Database file not found, skipping backup');
+            console.log(' Database file not found, skipping backup');
         }
     } catch (error) {
-        console.error('❌ Error backing up database:', error.message);
+        console.error(' Error backing up database:', error.message);
     }
 }
 
@@ -502,32 +571,32 @@ setInterval(backupDatabase, 24 * 60 * 60 * 1000);
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-    console.log(`🏢 Portal: http://localhost:${PORT}/portal`);
-    console.log(`🔧 API: http://localhost:${PORT}/api`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Dashboard: http://localhost:${PORT}/dashboard`);
+    console.log(`Portal: http://localhost:${PORT}/portal`);
+    console.log(`API: http://localhost:${PORT}/api`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down...');
+    console.log('\n Shutting down...');
     db.close((err) => {
         if (err) {
             console.error('Error closing database:', err.message);
         } else {
-            console.log('✅ Database connection closed');
+            console.log(' Database connection closed');
         }
         process.exit(0);
     });
 });
 
 process.on('SIGTERM', () => {
-    console.log('🛑 SIGTERM received, shutting down gracefully');
+    console.log(' SIGTERM received, shutting down gracefully');
     db.close((err) => {
         if (err) {
             console.error('Error closing database:', err.message);
         } else {
-            console.log('✅ Database connection closed');
+            console.log(' Database connection closed');
         }
         process.exit(0);
     });

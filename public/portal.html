@@ -272,7 +272,7 @@
         </div>
 
         <div class="main-content">
-            <h2 style="margin-bottom: 25px; color: #333;">📝 New Transaction</h2>
+            <h2 style="margin-bottom: 25px; color: #333;">New Transaction</h2>
             
             <form id="transactionForm">
                 <div class="form-grid">
@@ -291,9 +291,9 @@
                         <label for="service">Service Type *</label>
                         <select id="service" name="service" required>
                             <option value="">Select Service</option>
-                            <option value="Photography">📸 Photography</option>
-                            <option value="Makeup">💄 Makeup</option>
-                            <option value="Product Sales">🛍️ Product Sales</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Makeup">Makeup</option>
+                            <option value="Product Sales">Product Sales</option>
                         </select>
                     </div>
                     
@@ -321,12 +321,48 @@
                 </div>
                 
                 <button type="submit" class="btn" id="submitBtn">
-                    💾 Save Transaction
+                     Save Transaction
+                </button>
+            </form>
+
+
+            <hr style="margin: 40px 0; border: none; border-top: 2px solid #e1e5e9;">
+
+            <h2 style="margin-bottom: 10px; color: #333;"> New Expense (No Customer Required)</h2>
+            
+
+            <form id="expenseForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="expenseDescription">Expense Description *</label>
+                        <input type="text" id="expenseDescription" name="expenseDescription" required
+                               placeholder="e.g. Fuel for editing, Office soap">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expenseAmount">Amount (₦) *</label>
+                        <input type="number" id="expenseAmount" name="expenseAmount" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expenseBy">Responsible Staff *</label>
+                        <input type="text" id="expenseBy" name="expenseBy" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="expenseDate">Expense Date *</label>
+                    <input type="date" id="expenseDate" name="expenseDate" required>
+                </div>
+
+                <button type="submit" class="btn" id="submitExpenseBtn">
+                    Save Expense
                 </button>
             </form>
 
             <div class="messaging-section">
-                <h3>💬 Communication Hub</h3>
+            <div class="messaging-section">
+                <h3>Communication Hub</h3>
                 <div class="messages-container" id="messagesContainer">
                     <div style="text-align: center; color: #666; padding: 20px;">
                         Loading messages...
@@ -361,6 +397,7 @@
 
         function setTodayDate() {
             document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('expenseDate').valueAsDate = new Date();
         }
 
         function updateConnectionStatus(status) {
@@ -426,7 +463,7 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    showMessage('✅ Transaction saved successfully!', 'success');
+                    showMessage(' Transaction saved successfully!', 'success');
                     this.reset();
                     setTodayDate();
                 } else {
@@ -441,6 +478,60 @@
                 submitBtn.innerHTML = originalText;
             }
         });
+
+        document.getElementById('expenseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitExpenseBtn = document.getElementById('submitExpenseBtn');
+            const originalText = submitExpenseBtn.innerHTML;
+
+            submitExpenseBtn.disabled = true;
+            submitExpenseBtn.innerHTML = '<span class="loading"></span> Saving...';
+
+            try {
+                const formData = new FormData(this);
+                const expenseData = {
+                    expenseDescription: formData.get('expenseDescription'),
+                    amount: parseFloat(formData.get('expenseAmount')),
+                    serviceBy: formData.get('expenseBy'),
+                    date: formData.get('expenseDate')
+                };
+
+                const response = await fetch(`${API_BASE_URL}/expenses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(expenseData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showExpenseMessage(' Expense saved successfully!', 'success');
+                    this.reset();
+                    document.getElementById('expenseDate').valueAsDate = new Date();
+                } else {
+                    throw new Error(result.error || 'Failed to save expense');
+                }
+
+            } catch (error) {
+                console.error('Error saving expense:', error);
+                showExpenseMessage(' Error saving expense: ' + error.message, 'error');
+            } finally {
+                submitExpenseBtn.disabled = false;
+                submitExpenseBtn.innerHTML = originalText;
+            }
+        });
+
+        function showExpenseMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+
+            const form = document.getElementById('expenseForm');
+            form.insertAdjacentElement('afterend', messageDiv);
+
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
 
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
