@@ -272,48 +272,6 @@ app.post('/api/expenses', (req, res) => {
 
     stmt.finalize();
 });
-// TEMPORARY - one-time historical data import. Deleting route after use
-app.post('/api/admin/import-historical', (req, res) => {
-    const { secret, transactions } = req.body;
-
-    if (!process.env.IMPORT_SECRET || secret !== process.env.IMPORT_SECRET) {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
-
-    if (!Array.isArray(transactions)) {
-        return res.status(400).json({ error: 'Expected { transactions: [...] }' });
-    }
-
-    db.get('SELECT COUNT(*) as count FROM transactions', (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-
-        const stmt = db.prepare(`INSERT OR IGNORE INTO transactions
-            (id, customerName, phoneNumber, service, amountPaid, serviceBy, expenses, date, timestamp, type, expenseDescription)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-
-        let inserted = 0, skipped = 0;
-
-        transactions.forEach((t) => {
-            stmt.run(
-                [t.id, t.customerName || '', t.phoneNumber || '', t.service || '',
-                 t.amountPaid || 0, t.serviceBy || '', t.expenses || 0, t.date, t.timestamp,
-                 t.type || 'sale', t.expenseDescription || null],
-                function(err) {
-                    if (!err) { this.changes > 0 ? inserted++ : skipped++; }
-                }
-            );
-        });
-
-        stmt.finalize(() => {
-            res.json({
-                message: 'Import complete',
-                existingBeforeImport: row.count,
-                inserted,
-                skipped
-            });
-        });
-    });
-});
 // Get dashboard analytics
 app.get('/api/analytics', (req, res) => {
     const { filter } = req.query;
