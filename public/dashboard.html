@@ -552,32 +552,32 @@
     
     <div class="container">
         <div class="header">
-            <h1>📊 Business Dashboard</h1>
+            <h1>Business Dashboard</h1>
             <p class="subtitle">Real-time Analytics & Performance Insights</p>
         </div>
 
         <div class="main-content">
             <div class="dashboard-grid">
                 <div class="card">
-                    <h3>💰 Total Income</h3>
+                    <h3>Total Income</h3>
                     <div class="amount" id="totalIncome">₦0.00</div>
                     <div class="change" id="incomeChange">Loading...</div>
                 </div>
                 
                 <div class="card">
-                    <h3>💸 Total Expenses</h3>
+                    <h3>Total Expenses</h3>
                     <div class="amount" id="totalExpenses">₦0.00</div>
                     <div class="change" id="expensesChange">Loading...</div>
                 </div>
                 
                 <div class="card">
-                    <h3>📈 Net Profit</h3>
+                    <h3>Net Profit</h3>
                     <div class="amount" id="netIncome">₦0.00</div>
                     <div class="change" id="profitChange">Loading...</div>
                 </div>
                 
                 <div class="card">
-                    <h3>📋 Transactions</h3>
+                    <h3>Transactions</h3>
                     <div class="amount" id="transactionCount">0</div>
                     <div class="change" id="transactionChange">Loading...</div>
                 </div>
@@ -599,32 +599,32 @@
             </div>
 
             <div class="chart-container">
-                <h3>🏆 Service Performance Analysis</h3>
+                <h3>Service Performance Analysis</h3>
                 <canvas id="serviceChart" width="400" height="200"></canvas>
             </div>
 
             <div class="filter-controls">
-                <button class="filter-btn active" onclick="filterTransactions('day')">📅 Today</button>
-                <button class="filter-btn" onclick="filterTransactions('week')">📆 This Week</button>
-                <button class="filter-btn" onclick="filterTransactions('month')">🗓️ This Month</button>
-                <button class="filter-btn" onclick="filterTransactions('year')">📅 This Year</button>
-                <button class="filter-btn" onclick="filterTransactions('all')">🗂️ All Time</button>
+                <button class="filter-btn active" onclick="filterTransactions('day')">Today</button>
+                <button class="filter-btn" onclick="filterTransactions('week')">This Week</button>
+                <button class="filter-btn" onclick="filterTransactions('month')">This Month</button>
+                <button class="filter-btn" onclick="filterTransactions('year')">This Year</button>
+                <button class="filter-btn" onclick="filterTransactions('all')">All Time</button>
             </div>
 
             <div class="admin-controls" style="margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                 <button class="btn export-btn" onclick="exportData('csv')" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
-                    📊 Export CSV
+                    Export CSV
                 </button>
                 <button class="btn export-btn" onclick="exportData('json')" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
-                    📋 Export JSON
+                    Export JSON
                 </button>
                 <button class="btn clear-btn" onclick="showClearConfirmation()" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
-                    🗑️ Clear All Data
+                    Clear All Data
                 </button>
             </div>
 
             <div class="transactions-section">
-                <h3>📋 Transaction History</h3>
+                <h3>Transaction History</h3>
                 <table class="transactions-table" id="transactionsTable">
                     <thead>
                         <tr>
@@ -937,7 +937,7 @@
             container.innerHTML = messages.map(message => `
                 <div class="message ${message.sender === 'portal' ? 'from-portal' : 'from-dashboard'}">
                     <div class="message-meta">
-                        ${message.sender === 'portal' ? '🏢 Front Desk' : '📊 Dashboard'} - ${message.time}
+                        ${message.sender === 'portal' ? 'Front Desk' : 'Dashboard'} - ${message.time}
                     </div>
                     <div class="message-text">${escapeHtml(message.text)}</div>
                 </div>
