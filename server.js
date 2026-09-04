@@ -18,7 +18,7 @@ function formatDate(date) {
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}`;   
 }
 
 // Middleware
@@ -59,13 +59,28 @@ db.serialize(() => {
         timestamp TEXT NOT NULL
     )`);
 
-    // Messages table
+        // Messages table
     db.run(`CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         text TEXT NOT NULL,
         sender TEXT NOT NULL,
         timestamp TEXT NOT NULL,
         time TEXT NOT NULL
+    )`);
+
+    // Financial records table — admin-entered income/expenses that are
+    // independent of customer transactions (weddings, direct sales,
+    // utilities, rent, etc.). Kept as its own table so it never overlaps
+    // with the `transactions` table.
+    db.run(`CREATE TABLE IF NOT EXISTS financial_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        amount REAL NOT NULL,
+        category TEXT NOT NULL,
+        description TEXT NOT NULL,
+        date TEXT NOT NULL,
+        notes TEXT,
+        timestamp TEXT NOT NULL
     )`);
 });
 // Migration: add columns needed for standalone (non-customer) expense records.
@@ -263,7 +278,7 @@ app.post('/api/expenses', (req, res) => {
 
         console.log(` New standalone expense added: ${expenseDescription} - ₦${amount} (by ${serviceBy})`);
 
-        res.json({
+                res.json({
             id: this.lastID,
             message: 'Expense recorded successfully',
             transaction: newExpense
@@ -272,6 +287,194 @@ app.post('/api/expenses', (req, res) => {
 
     stmt.finalize();
 });
+
+// ==================== FINANCIAL RECORDS ====================
+// Admin-only, customer-independent income and expenses (weddings, direct
+// sales, utilities, rent, etc.) — a separate table from `transactions`.
+
+// Get financial records (optionally filtered)
+app.get('/api/financial-records', (req, res) => {
+    const { type, category, startDate, endDate, month } = req.query;
+    let query = 'SELECT * FROM financial_records WHERE 1=1';
+    let params = [];
+
+    if (type === 'income' || type === 'expense') {
+        query += ' AND type = ?';
+        params.push(type);
+    }
+
+    if (category) {
+        query += ' AND category = ?';
+        params.push(category);
+    }
+
+    if (month) {
+        // month format: YYYY-MM
+        query += " AND strftime('%Y-%m', date) = ?";
+        params.push(month);
+    } else if (startDate && endDate) {
+        query += ' AND date >= ? AND date <= ?';
+        params.push(startDate, endDate);
+    }
+
+    query += ' ORDER BY date DESC, timestamp DESC';
+
+    db.all(query, params, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
+// Add a financial record
+app.post('/api/financial-records', (req, res) => {
+    const { type, amount, category, description, date, notes } = req.body;
+
+    if (!type || !amount || !category || !description || !date) {
+        return res.status(400).json({ error: 'Required fields missing: type, amount, category, description, date' });
+    }
+    if (type !== 'income' && type !== 'expense') {
+        return res.status(400).json({ error: 'type must be either "income" or "expense"' });
+    }
+
+    const timestamp = new Date().toISOString();
+    const formattedDate = formatDate(date);
+
+    const stmt = db.prepare(`INSERT INTO financial_records
+        (type, amount, category, description, date, notes, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`);
+
+    stmt.run([type, amount, category, description, formattedDate, notes || '', timestamp], function(err) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        console.log(` New financial record added: ${type} - ${category} - ₦${amount}`);
+        res.json({
+            id: this.lastID,
+            message: 'Financial record added successfully',
+            record: { id: this.lastID, type, amount: parseFloat(amount), category, description, date: formattedDate, notes: notes || '', timestamp }
+        });
+    });
+
+    stmt.finalize();
+});
+
+// Update a financial record
+app.put('/api/financial-records/:id', (req, res) => {
+    const { id } = req.params;
+    const { type, amount, category, description, date, notes } = req.body;
+
+    if (!type || !amount || !category || !description || !date) {
+        return res.status(400).json({ error: 'Required fields missing: type, amount, category, description, date' });
+    }
+    if (type !== 'income' && type !== 'expense') {
+        return res.status(400).json({ error: 'type must be either "income" or "expense"' });
+    }
+
+    const formattedDate = formatDate(date);
+
+    const stmt = db.prepare(`UPDATE financial_records
+        SET type = ?, amount = ?, category = ?, description = ?, date = ?, notes = ?
+        WHERE id = ?`);
+
+    stmt.run([type, amount, category, description, formattedDate, notes || '', id], function(err) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Financial record not found' });
+        }
+        res.json({ message: 'Financial record updated successfully' });
+    });
+
+    stmt.finalize();
+});
+
+// Delete a financial record
+app.delete('/api/financial-records/:id', (req, res) => {
+    const { id } = req.params;
+
+    db.run('DELETE FROM financial_records WHERE id = ?', [id], function(err) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Financial record not found' });
+        }
+        res.json({ message: 'Financial record deleted successfully' });
+    });
+});
+
+// Combined business financial summary — merges customer transactions
+// (`transactions` table) with admin-entered records (`financial_records`
+// table). These are two distinct tables, so nothing is ever counted twice.
+app.get('/api/financial-summary', (req, res) => {
+    const { month, startDate, endDate } = req.query;
+
+    let txQuery = 'SELECT * FROM transactions WHERE 1=1';
+    let txParams = [];
+    let frQuery = 'SELECT * FROM financial_records WHERE 1=1';
+    let frParams = [];
+
+    if (month) {
+        txQuery += " AND strftime('%Y-%m', date) = ?";
+        txParams.push(month);
+        frQuery += " AND strftime('%Y-%m', date) = ?";
+        frParams.push(month);
+    } else if (startDate && endDate) {
+        txQuery += ' AND date >= ? AND date <= ?';
+        txParams.push(startDate, endDate);
+        frQuery += ' AND date >= ? AND date <= ?';
+        frParams.push(startDate, endDate);
+    }
+
+    db.all(txQuery, txParams, (err, transactions) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+
+        db.all(frQuery, frParams, (err2, records) => {
+            if (err2) {
+                res.status(500).json({ error: err2.message });
+                return;
+            }
+
+            const transactionRevenue = transactions.reduce((sum, t) => sum + t.amountPaid, 0);
+            const transactionExpenses = transactions.reduce((sum, t) => sum + t.expenses, 0);
+            const directIncome = records.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+            const directExpenses = records.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+
+            const totalRevenue = transactionRevenue + directIncome;
+            const totalExpenses = transactionExpenses + directExpenses;
+
+            const categoryBreakdown = {};
+            records.forEach(r => {
+                if (!categoryBreakdown[r.category]) categoryBreakdown[r.category] = { income: 0, expense: 0 };
+                categoryBreakdown[r.category][r.type] += r.amount;
+            });
+
+            res.json({
+                totalRevenue,
+                totalExpenses,
+                netIncome: totalRevenue - totalExpenses,
+                breakdown: { transactionRevenue, transactionExpenses, directIncome, directExpenses },
+                categoryBreakdown,
+                recordCount: records.length,
+                transactionCount: transactions.length
+            });
+        });
+    });
+});
+
 // Get dashboard analytics
 app.get('/api/analytics', (req, res) => {
     const { filter } = req.query;

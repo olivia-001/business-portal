@@ -505,12 +505,210 @@
             margin-bottom: 8px;
         }
 
-        .stat-item .value {
+                .stat-item .value {
             font-size: 1.5rem;
             font-weight: bold;
             color: #333;
         }
 
+        .financial-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .financial-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.4rem;
+        }
+
+        .financial-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .financial-summary-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #2c3e50;
+        }
+
+        .financial-summary-item h4 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .financial-summary-item .value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .financial-form-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .financial-form-card h4 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .financial-form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .financial-filter-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            padding: 13px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .type-badge.income {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .type-badge.expense {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .record-action-btn {
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .record-action-btn.edit {
+            background: #eef3fb;
+            color: #2c3e50;
+        }
+
+        .record-action-btn.edit:hover {
+            background: #dbe6f5;
+        }
+
+        .record-action-btn.delete {
+            background: #fbeaea;
+            color: #c0392b;
+        }
+
+        .record-action-btn.delete:hover {
+            background: #f5d5d5;
+        }
+
+                .scope-note {
+            font-size: 0.85rem;
+            color: #888;
+            text-align: center;
+            margin-top: -15px;
+            margin-bottom: 25px;
+        }
+
+        .financial-form-card .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .financial-form-card .form-group {
+            margin-bottom: 18px;
+        }
+
+        .financial-form-card .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .financial-form-card .form-group input,
+        .financial-form-card .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .financial-form-card .form-group input:focus,
+        .financial-form-card .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+        }
+
+        .financial-form-card .form-group input::placeholder {
+            color: #aab0b6;
+        }
+
+        .financial-form-card .financial-form-actions .btn {
+            padding: 13px 32px;
+            font-size: 14px;
+        }
+
+        .financial-form-card .financial-form-actions .btn-secondary {
+            background: #eceff1;
+            color: #555;
+            box-shadow: none;
+        }
+
+        .financial-form-card .financial-form-actions .btn-secondary:hover {
+            background: #e0e3e6;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -557,15 +755,16 @@
         </div>
 
         <div class="main-content">
+                        <h3 style="color:#333; margin-bottom: 15px; text-align:center;">Inhouse Performance</h3>
             <div class="dashboard-grid">
                 <div class="card">
-                    <h3>Total Income</h3>
+                    <h3>Income</h3>
                     <div class="amount" id="totalIncome">₦0.00</div>
                     <div class="change" id="incomeChange">Loading...</div>
                 </div>
                 
                 <div class="card">
-                    <h3>Total Expenses</h3>
+                    <h3>Expenses</h3>
                     <div class="amount" id="totalExpenses">₦0.00</div>
                     <div class="change" id="expensesChange">Loading...</div>
                 </div>
@@ -582,6 +781,8 @@
                     <div class="change" id="transactionChange">Loading...</div>
                 </div>
             </div>
+            <i><p style="text-align: center;" class="scope-note">Reflects transactions recorded through the Front Desk Portal only. See "Business Financial Overview" below for company-wide figures </p></i><br>
+    
 
             <div class="stats-summary">
                 <div class="stat-item">
@@ -618,9 +819,109 @@
                 <button class="btn export-btn" onclick="exportData('json')" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
                     Export JSON
                 </button>
-                <button class="btn clear-btn" onclick="showClearConfirmation()" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                <button class="btn clear-btn" onclick="showClearConfirmation()" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
                     Clear All Data
                 </button>
+            </div>
+
+            <div class="financial-section">
+                <h3>Business Financial Overview</h3>
+                <p style="color:#666; margin-bottom:20px; font-size:14px;">Income and expenses recorded independently of customer transactions — direct sales, weddings, general business expenses, etc.</p>
+
+                <div class="financial-summary-grid">
+                    <div class="financial-summary-item">
+                        <h4>Total Revenue</h4>
+                        <div class="value" id="fsTotalRevenue">₦0.00</div>
+                    </div>
+                    <div class="financial-summary-item">
+                        <h4>Total Expenses</h4>
+                        <div class="value" id="fsTotalExpenses">₦0.00</div>
+                    </div>
+                    <div class="financial-summary-item">
+                        <h4>Net Income</h4>
+                        <div class="value" id="fsNetIncome">₦0.00</div>
+                    </div>
+                </div>
+                <p id="fsBreakdown" style="color:#888; font-size:13px; margin-bottom:25px;"></p>
+
+                                <div class="financial-form-card">
+                <h4 id="financialFormTitle">Add Financial Record</h4>
+                <form id="financialForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="financialType">Type *</label>
+                            <select id="financialType" name="financialType" required>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="financialAmount">Amount (₦) *</label>
+                            <input type="number" id="financialAmount" name="financialAmount" min="0" step="0.01" placeholder="0.00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="financialDate">Date *</label>
+                            <input type="date" id="financialDate" name="financialDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="financialCategory">Category *</label>
+                        <select id="financialCategory" name="financialCategory" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="financialDescription">Description *</label>
+                        <input type="text" id="financialDescription" name="financialDescription" required placeholder="e.g. Wedding coverage, Electricity bill">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="financialNotes">Notes</label>
+                        <input type="text" id="financialNotes" name="financialNotes" placeholder="Optional">
+                    </div>
+
+                    <div class="financial-form-actions">
+                        <button type="submit" class="btn" id="submitFinancialBtn">Save Record</button>
+                        <button type="button" class="btn btn-secondary" id="cancelFinancialEditBtn" style="display:none;" onclick="cancelFinancialEdit()">Cancel Edit</button>
+                    </div>
+                </form>
+                </div>
+
+                <h4 style="margin-bottom:15px; color:#333;">Financial Records</h4>
+                <div class="financial-filter-row">
+                    <select id="financialFilterType" class="filter-select" onchange="filterFinancialRecords()">
+                        <option value="all">All Types</option>
+                        <option value="income">Income Only</option>
+                        <option value="expense">Expense Only</option>
+                    </select>
+                    <select id="financialFilterCategory" class="filter-select" onchange="filterFinancialRecords()">
+                        <option value="all">All Categories</option>
+                    </select>
+                    <input type="month" id="financialFilterMonth" class="filter-select" onchange="filterFinancialRecords()">
+                    <button type="button" class="btn btn-secondary" style="padding:12px 22px; font-size:13px;" onclick="clearFinancialFilters()">Clear Filters</button>
+                </div>
+
+                <table class="transactions-table" id="financialRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financialRecordsList">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">Loading financial records...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="transactions-section">
@@ -687,9 +988,13 @@
             initializeApp();
         });
 
-        // Initialize application
+                // Initialize application
         async function initializeApp() {
             setupChart();
+            populateFinancialCategoryOptions();
+            populateFinancialFilterCategoryOptions();
+            document.getElementById('financialDate').valueAsDate = new Date();
+            setupFinancialForm();
             await refreshData();
             setupAutoRefresh();
             checkConnection();
@@ -724,13 +1029,14 @@
             setTimeout(checkConnection, 30000);
         }
 
-        // Refresh all data
+                // Refresh all data
         async function refreshData() {
             try {
                 await Promise.all([
                     loadAnalytics(),
                     loadTransactions(),
-                    loadMessages()
+                    loadMessages(),
+                    loadFinancialData()
                 ]);
             } catch (error) {
                 console.error('Error refreshing data:', error);
@@ -836,6 +1142,221 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+                // ==================== FINANCIAL RECORDS ====================
+        let financialFilterType = 'all';
+        let financialFilterCategory = 'all';
+        let financialFilterMonth = '';
+        let editingFinancialRecordId = null;
+
+        const INCOME_CATEGORIES = ['Front Desk / Customer Transaction', 'Owner Direct Sale', 'Wedding / Event', 'Frame Sale', 'Large Coverage Job', 'Other Business Income'];
+        const EXPENSE_CATEGORIES = ['Utilities', 'Rent', 'Transportation', 'Equipment', 'Repairs', 'Supplies', 'Internet', 'Staff', 'Maintenance', 'Marketing', 'Software/Subscriptions', 'Other'];
+
+        function populateFinancialCategoryOptions() {
+            const typeSelect = document.getElementById('financialType');
+            const categorySelect = document.getElementById('financialCategory');
+            const categories = typeSelect.value === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+            categorySelect.innerHTML = '<option value="">Select Category</option>' +
+                categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function populateFinancialFilterCategoryOptions() {
+            const filterCategorySelect = document.getElementById('financialFilterCategory');
+            const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+            filterCategorySelect.innerHTML = '<option value="all">All Categories</option>' +
+                allCategories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function setupFinancialForm() {
+            document.getElementById('financialType').addEventListener('change', populateFinancialCategoryOptions);
+
+            document.getElementById('financialForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const submitBtn = document.getElementById('submitFinancialBtn');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const recordData = {
+                    type: document.getElementById('financialType').value,
+                    amount: parseFloat(document.getElementById('financialAmount').value),
+                    category: document.getElementById('financialCategory').value,
+                    description: document.getElementById('financialDescription').value,
+                    date: document.getElementById('financialDate').value,
+                    notes: document.getElementById('financialNotes').value
+                };
+
+                try {
+                    let response;
+                    if (editingFinancialRecordId) {
+                        response = await fetch(`${API_BASE_URL}/financial-records/${editingFinancialRecordId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(recordData)
+                        });
+                    } else {
+                        response = await fetch(`${API_BASE_URL}/financial-records`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(recordData)
+                        });
+                    }
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Failed to save record');
+
+                    showNotification(editingFinancialRecordId ? ' Record updated successfully!' : ' Record saved successfully!', 'success');
+                    cancelFinancialEdit();
+                    await loadFinancialData();
+
+                } catch (error) {
+                    console.error('Error saving financial record:', error);
+                    showNotification('❌ ' + error.message, 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        }
+
+        async function loadFinancialData() {
+            await Promise.all([loadFinancialSummary(), loadFinancialRecords()]);
+        }
+
+        function buildFinancialQueryParams() {
+            const params = new URLSearchParams();
+            if (financialFilterType !== 'all') params.set('type', financialFilterType);
+            if (financialFilterCategory !== 'all') params.set('category', financialFilterCategory);
+            if (financialFilterMonth) params.set('month', financialFilterMonth);
+            return params.toString();
+        }
+
+        async function loadFinancialSummary() {
+            try {
+                const monthParam = financialFilterMonth ? `?month=${financialFilterMonth}` : '';
+                const response = await fetch(`${API_BASE_URL}/financial-summary${monthParam}`);
+                if (!response.ok) throw new Error('Failed to load financial summary');
+
+                const data = await response.json();
+                document.getElementById('fsTotalRevenue').textContent = formatCurrency(data.totalRevenue);
+                document.getElementById('fsTotalExpenses').textContent = formatCurrency(data.totalExpenses);
+                document.getElementById('fsNetIncome').textContent = formatCurrency(data.netIncome);
+                                document.getElementById('fsBreakdown').textContent =
+                    `Inhouse income: ${formatCurrency(data.breakdown.transactionRevenue)} · Inhouse expenses: ${formatCurrency(data.breakdown.transactionExpenses)} · Direct income: ${formatCurrency(data.breakdown.directIncome)} · Direct expenses: ${formatCurrency(data.breakdown.directExpenses)}`;
+            } catch (error) {
+                console.error('Error loading financial summary:', error);
+            }
+        }
+
+        async function loadFinancialRecords() {
+            try {
+                const query = buildFinancialQueryParams();
+                const response = await fetch(`${API_BASE_URL}/financial-records${query ? '?' + query : ''}`);
+                if (!response.ok) throw new Error('Failed to load financial records');
+
+                const records = await response.json();
+                displayFinancialRecords(records);
+            } catch (error) {
+                console.error('Error loading financial records:', error);
+                document.getElementById('financialRecordsList').innerHTML =
+                    '<tr><td colspan="6" style="text-align: center; color: #f44336; padding: 30px;">Failed to load financial records</td></tr>';
+            }
+        }
+
+        function displayFinancialRecords(records) {
+            const tbody = document.getElementById('financialRecordsList');
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;">No financial records found</td></tr>';
+                return;
+            }
+
+                        tbody.innerHTML = records.map(record => {
+                const isIncome = record.type === 'income';
+                const badge = isIncome
+                    ? '<span class="type-badge income">Income</span>'
+                    : '<span class="type-badge expense">Expense</span>';
+                const amountDisplay = (isIncome ? '+ ' : '− ') + formatCurrency(record.amount);
+
+                return `
+                    <tr>
+                        <td>${new Date(record.date).toLocaleDateString()}</td>
+                        <td>${badge}</td>
+                        <td>${escapeHtml(record.category)}</td>
+                        <td>${escapeHtml(record.description)}</td>
+                        <td style="color:${isIncome ? '#1e7e34' : '#c0392b'}; font-weight:bold;">${amountDisplay}</td>
+                        <td>
+                            <button type="button" class="record-action-btn edit" onclick="startEditFinancialRecord(${record.id})">Edit</button>
+                            <button type="button" class="record-action-btn delete" onclick="deleteFinancialRecord(${record.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            window._financialRecordsCache = records;
+        }
+
+        function startEditFinancialRecord(id) {
+            const record = (window._financialRecordsCache || []).find(r => r.id === id);
+            if (!record) return;
+
+            editingFinancialRecordId = id;
+            document.getElementById('financialType').value = record.type;
+            populateFinancialCategoryOptions();
+            document.getElementById('financialCategory').value = record.category;
+            document.getElementById('financialAmount').value = record.amount;
+            document.getElementById('financialDescription').value = record.description;
+            document.getElementById('financialDate').value = record.date;
+            document.getElementById('financialNotes').value = record.notes || '';
+
+            document.getElementById('financialFormTitle').textContent = 'Edit Financial Record';
+            document.getElementById('submitFinancialBtn').textContent = 'Update Record';
+            document.getElementById('cancelFinancialEditBtn').style.display = 'inline-block';
+            document.getElementById('financialForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelFinancialEdit() {
+            editingFinancialRecordId = null;
+            document.getElementById('financialForm').reset();
+            populateFinancialCategoryOptions();
+            document.getElementById('financialDate').valueAsDate = new Date();
+            document.getElementById('financialFormTitle').textContent = 'Add Financial Record';
+            document.getElementById('submitFinancialBtn').textContent = 'Save Record';
+            document.getElementById('cancelFinancialEditBtn').style.display = 'none';
+        }
+
+        async function deleteFinancialRecord(id) {
+            if (!confirm('Delete this financial record? This cannot be undone.')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/financial-records/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Failed to delete record');
+
+                showNotification(' Financial record deleted', 'success');
+                await loadFinancialData();
+            } catch (error) {
+                console.error('Error deleting financial record:', error);
+                showNotification('❌ Failed to delete financial record', 'error');
+            }
+        }
+
+        function filterFinancialRecords() {
+            financialFilterType = document.getElementById('financialFilterType').value;
+            financialFilterCategory = document.getElementById('financialFilterCategory').value;
+            financialFilterMonth = document.getElementById('financialFilterMonth').value;
+            loadFinancialData();
+        }
+
+        function clearFinancialFilters() {
+            document.getElementById('financialFilterType').value = 'all';
+            document.getElementById('financialFilterCategory').value = 'all';
+            document.getElementById('financialFilterMonth').value = '';
+            financialFilterType = 'all';
+            financialFilterCategory = 'all';
+            financialFilterMonth = '';
+            loadFinancialData();
         }
 
         // Setup chart
